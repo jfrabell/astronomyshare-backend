@@ -2,9 +2,8 @@
 
 require('dotenv').config(); // MUST be first
 
-// --- Core Requires ---
 const express = require('express');
-const http = require('http');
+const serverless = require('@vendia/serverless-express');
 const cors = require('cors');
 // --- Removed requires handled in routers or config files (bcrypt, jwt, mysql, aws-sdk) ---
 
@@ -57,8 +56,5 @@ app.get('/image-count', async (req, res) => {
     }
 });
 
-// --- Start Server ---
-const httpServer = http.createServer(app);
-httpServer.listen(3001, () => {
-    console.log('HTTP server listening on port 3001');
-});
+// --- Export for Lambda ---
+exports.handler = serverless({ app });
