@@ -1,0 +1,10 @@
+Project Summary
+Goal: You are creating an AWS Fargate worker to process file batches. Its job is to zip files from an S3 bucket, move the originals to cold storage, and report the new zip file's location back to your main application.
+Our Progress: We've analyzed your initial worker.js, Dockerfile, and package.json. We identified that your Dockerfile was set up to use a large package.json from a React front-end, which would create an inefficient container.
+Last Steps Taken: I provided you with a set of refactoring recommendations to create a lean, efficient, and robust Fargate worker. These included:
+Creating a separate, minimal worker.package.json with only the necessary dependencies (@aws-sdk/client-s3, archiver, axios, etc.).
+Updating your Dockerfile to use this new, smaller package file.
+Creating a .dockerignore file to prevent unnecessary files (like your local node_modules) from being copied into the image, which speeds up the build.
+Refactoring the worker.js script to use the modern AWS SDK v3 for better performance and reliability.
+Current Status: You have made these changes and are now ready to execute the sequence of docker commands to build the image, tag it for your ECR repository, and push it to AWS.
+In addition, Docker desktop is failing to build the image as it can't reach the server.  When you restarted you found virtualization not supported and that's why you rebooted.
