@@ -4,6 +4,11 @@ phases:
     commands:
       - echo "Installing dependencies with npm ci..."
       - npm ci
+  build:
+    commands:
+      - echo "--- Listing files AFTER npm ci ---"
+      - ls -la
+      - echo "----------------------------------"
 artifacts:
   files:
     - '**/*'
