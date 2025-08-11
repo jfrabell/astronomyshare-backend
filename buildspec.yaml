@@ -1,0 +1,9 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - echo "Installing dependencies with npm ci..."
+      - npm ci
+artifacts:
+  files:
+    - '**/*'
