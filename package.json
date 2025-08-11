@@ -7,16 +7,22 @@
     "start": "node node.js"
   },
   "dependencies": {
-    "@vendia/serverless-express": "^4.10.4",
+    "@aws-sdk/client-ecs": "^3.864.0",
+    "@aws-sdk/client-sns": "^3.864.0",
+    "@vendia/serverless-express": "^4.12.6",
     "archiver": "^7.0.1",
     "aws-sdk": "^2.1692.0",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
-    "dotenv": "^16.5.0",
+    "dotenv": "^16.6.1",
     "express": "^4.19.2",
+    "form-data": "^4.0.4",
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.1.0",
+    "mailgun": "^0.5.0",
+    "mailgun.js": "^12.0.3",
     "multer": "^1.4.5-lts.2",
-    "mysql2": "^3.14.0"
+    "mysql2": "^3.14.3",
+    "on-finished": "^2.3.0"
   }
 }
