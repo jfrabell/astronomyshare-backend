@@ -1,4 +1,6 @@
 // backend/auth-handler.js
+//adding a comment to rebuild the whole damn thing.
+
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
