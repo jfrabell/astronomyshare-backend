@@ -2,13 +2,17 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo "Installing dependencies with npm ci..."
+      - echo "Installing dependencies..."
       - npm ci
   build:
     commands:
-      - echo "--- Listing files AFTER npm ci ---"
-      - ls -la
-      - echo "----------------------------------"
+      - echo "Creating deployment package..."
+      - zip -r deploy.zip .
+      - echo "--- Verifying zip contents ---"
+      - echo "Searching for bcryptjs in zip..."
+      - unzip -l deploy.zip | grep "bcryptjs" || echo "bcryptjs NOT FOUND IN ZIP"
+      - echo "Total file count in zip:"
+      - unzip -l deploy.zip | wc -l
 artifacts:
   files:
-    - '**/*'
+    - deploy.zip
