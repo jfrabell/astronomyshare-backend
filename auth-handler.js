@@ -1,5 +1,5 @@
 // backend/auth-handler.js
-//adding a comment to rebuild the whole damn thing.
+//adding a comment to rebuild the hole.
 
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
