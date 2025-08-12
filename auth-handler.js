@@ -1,5 +1,5 @@
 // backend/auth-handler.js
-//adding a comment to rebuild the hole.
+//adding a comment to rebuild the.
 
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
@@ -285,12 +285,16 @@ const router = {
 exports.handler = async (event) => {
   // For HTTP APIs (payload format 2.0), the path is in event.rawPath.
   // For REST APIs (payload format 1.0), it's in event.path. This handles both.
-  console.log('Request received for path:', event.path);
-  const allowedOrigin = process.env.FRONTEND_URL || 'https://astronomyshare.com';
+  const path = event.rawPath || event.path;
+  const method = event.requestContext?.http?.method || event.httpMethod;
+  console.log(`Request received for path: ${path}, method: ${method}`);
+
+  const routeHandler = router[path];
+  const allowedOrigin = process.env.FRONTEND_URL || 'https://dev.astronomyshare.com' || 'https://astronomyshare.com';
 
 
   // --- Handle CORS Preflight Requests ---
-  if (event.httpMethod === 'OPTIONS') {
+    if (method === 'OPTIONS') {
     return {
       statusCode: 204, // 204 No Content is the standard for preflight
       headers: {
@@ -302,7 +306,6 @@ exports.handler = async (event) => {
     };
   }
 
-  const routeHandler = router[event.path];
   if (routeHandler) {
     try {
       const result = await routeHandler(event);
