@@ -137,9 +137,20 @@ router.post('/register', async (req, res) => {
         // Insert the new user
         const defaultQuota = 1073741824;
         const usedQuota = 0;
-        const insertUserSql = "INSERT INTO user (uname, email, pwrd, upload_quota, used_quota) VALUES (?, ?, ?, ?, ?)";
+const insertUserSql = `
+  INSERT INTO user (uname, email, given_name, cognito_sub, upload_quota, used_quota)
+  VALUES (?, ?, ?, ?, ?, ?)
+`;
         console.log("TRY_BLOCK: About to insert user."); // <-- ADD
-        const [insertResult] = await dbPool.execute(insertUserSql, [uname, email, hashedPassword, defaultQuota, usedQuota]);
+        await dbPool.execute(insertUserSql, [
+        uname,
+        email,
+        givenName,
+        cognitoSub,
+        defaultQuota,
+        0
+]);
+
         const newUserId = insertResult.insertId;
         console.log("[API Router /register] New user inserted:", uname, "ID:", newUserId); // Keep original log
 
