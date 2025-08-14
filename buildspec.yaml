@@ -9,7 +9,7 @@ phases:
       - mkdir deployment_package
       # Copy the essential files and folders into it
       - cp -r node_modules/ deployment_package/
-      - cp auth-handler.js db.js package.json package-lock.json knexfile.js deployment_package/
+      - cp auth-handler.js db.js cognito-config.js package.json package-lock.json knexfile.js deployment_package/
       - cp -r services/ middleware/ migrations/ seeds/ deployment_package/
 artifacts:
   # Tell the pipeline that the final artifact is the contents of this new directory
