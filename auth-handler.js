@@ -5,6 +5,19 @@ const { userPool } = require('./cognito-config');
 console.log("Cognito UserPoolId:", process.env.REACT_APP_COGNITO_USER_POOL_ID);
 console.log("Cognito ClientId:", process.env.REACT_APP_COGNITO_CLIENT_ID);
 
+
+const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
+
+const poolData = {
+  UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
+  ClientId: process.env.REACT_APP_COGNITO_CLIENT_ID
+};
+
+const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+module.exports = { userPool };
+
+
+
 exports.handler = async (event) => {
   try {
     const body = JSON.parse(event.body);
