@@ -1,7 +1,8 @@
 // src/routes/auth.js (REVISED - Promise/Async Style)
+// herewego again...
+
 const express = require('express');
 const bcrypt = require('bcrypt');
-const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { sendEmail } = require('../services/emailService');
 const dbPool = require('../db'); // Use pool, renamed variable for clarity
@@ -152,6 +153,7 @@ router.post('/register', async (req, res) => {
         return res.status(500).json({ errorCode });
     }
 });
+
 
 
 
