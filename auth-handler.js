@@ -2,87 +2,27 @@
 // herewego again...
 
 const express = require('express');
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { sendEmail } = require('../services/emailService');
 const dbPool = require('../db'); // Use pool, renamed variable for clarity
-const authenticateToken = require('../middleware/authenticateToken'); // Adjust path as needed
 const router = express.Router();
-const saltRounds = 10;
 
 // === LOGIN ROUTE ===
-router.post('/login', async (req, res) => { // Make handler async
+router.post('/login', async (req, res) => {
     console.log("[API Router] POST /login - Request received");
-    const { username, password } = req.body; // 'username' corresponds to uname in DB
-
-    // Validation
-    if (!username || !password) {
-        // *** CHANGED RESPONSE ***
-        return res.status(400).json({ errorCode: 'API_AUTH_MISSING_FIELDS' });
-    }
 
     try {
-        // Find User by Username
-        const findUserSql = "SELECT id, uname, pwrd, isVerified, is_admin FROM user WHERE uname = ?";
-        const [results] = await dbPool.execute(findUserSql, [username]);
+        // You no longer fetch or check passwords
+        // DB calls can be for user info only if needed
 
-        // Handle User Not Found OR Password Mismatch (Combined for security)
-        // Check if user exists first
-        if (results.length === 0) {
-            console.log(`[API Router /login] Login attempt failed: User not found for identifier "${username}"`);
-            // *** CHANGED RESPONSE (Use generic invalid credentials) ***
-            return res.status(401).json({ errorCode: 'API_AUTH_INVALID_CREDENTIALS' }); // 401 Unauthorized
-        }
+        return res.status(501).json({ 
+            message: "Login logic now handled by Cognito. Backend password checks removed."
+        });
 
-        // User Found - Proceed to check password and verification
-        const user = results[0];
-        const storedHash = user.pwrd;
-
-        // Check if Verified (BEFORE checking password hash)
-        if (!user.isVerified) {
-            console.warn(`[API Router /login] Login attempt BLOCKED for unverified user: ${user.uname} (ID: ${user.id})`);
-            // *** CHANGED RESPONSE ***
-            return res.status(403).json({ errorCode: 'API_AUTH_ACCOUNT_NOT_VERIFIED' }); // 403 Forbidden
-        }
-
-        // Compare submitted password with stored hash
-        const isMatch = await bcrypt.compare(password, storedHash);
-
-        // Handle Password Mismatch
-        if (!isMatch) {
-            console.log(`[API Router /login] Login attempt failed: Incorrect password for user "${user.uname}"`);
-             // *** CHANGED RESPONSE (Use generic invalid credentials) ***
-            return res.status(401).json({ errorCode: 'API_AUTH_INVALID_CREDENTIALS' }); // 401 Unauthorized
-        }
-
-        // --- Passwords Match & User Verified! ---
-        console.log(`[API Router /login] Login successful for user "${user.uname}" (ID: ${user.id})`);
-
-        // Create JWT payload
-        const payload = {
-            userId: user.id,
-            username: user.uname,
-            is_admin: user.is_admin
-        };
-        const secretKey = process.env.JWT_SECRET;
-        if (!secretKey) {
-            console.error("FATAL ERROR: JWT_SECRET is not defined!");
-            // *** CHANGED RESPONSE ***
-            return res.status(500).json({ errorCode: 'API_SERVER_ERROR_GENERIC' }); // Use generic server error
-        }
-        const options = { expiresIn: '1h' };
-        const token = jwt.sign(payload, secretKey, options);
-
-        // --- Success Response ---
-        // *** CHANGED RESPONSE (Removed message, only send token) ***
-        return res.status(200).json({ token: token });
-
-    } catch (error) { // Catch errors from DB query or bcrypt
+    } catch (error) {
         console.error("[API Router /login] Error during login process:", error);
-        // *** CHANGED RESPONSE ***
         return res.status(500).json({ errorCode: 'API_SERVER_ERROR_GENERIC' });
     }
-}); // End POST /login
+});
 
 
 router.post('/register', async (req, res) => {
