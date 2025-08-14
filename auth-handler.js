@@ -1,13 +1,17 @@
-// src/routes/auth.js (REVISED - Promise/Async Style)
-// herewego again...
+// src/auth0handler.js 
 
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const dbPool = require('./db'); // Use pool, renamed variable for clarity
-const router = express.Router();
+const serverless = require('serverless-http');
+const dbPool = require('./db');
+const { userPool } = require('./cognito-config');
+
+
+const app = express();
+app.use(express.json());
+
 
 // === LOGIN ROUTE ===
-router.post('/login', async (req, res) => {
+app.post('/login', async (req, res) => {
     console.log("[API Router] POST /login - Request received");
 
     try {
@@ -25,7 +29,7 @@ router.post('/login', async (req, res) => {
 });
 
 
-router.post('/register', async (req, res) => {
+app.post('/register', async (req, res) => {
     console.log("[API Router] POST /register - Request received");
 
     const { uname, email, given_name, pwrd } = req.body;
@@ -90,4 +94,4 @@ router.post('/register', async (req, res) => {
     }
 });
 
-module.exports = router;
+module.exports.handler = serverless(app);
