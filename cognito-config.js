@@ -9,6 +9,3 @@ const poolData = {
 const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
 
 module.exports = { userPool };
-
-REACT_APP_COGNITO_CLIENT_ID
-REACT_APP_COGNITO_USER_POOL_ID
