@@ -3,7 +3,7 @@
 
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const dbPool = require('../db'); // Use pool, renamed variable for clarity
+const dbPool = require('./db'); // Use pool, renamed variable for clarity
 const router = express.Router();
 
 // === LOGIN ROUTE ===
@@ -80,10 +80,6 @@ router.post('/register', async (req, res) => {
         `;
         await dbPool.execute(insertUserSql, [uname, email, given_name, cognitoResult.userSub, defaultQuota, usedQuota]);
 
-        // --- 4️⃣ Optional: Send verification email (if not relying on Cognito's built-in email verification) ---
-        // const verificationToken = crypto.randomBytes(32).toString('hex');
-        // ... store token, send email ...
-
         // --- 5️⃣ Success response ---
         return res.status(201).json({ messageCode: 'API_AUTH_REGISTRATION_SUCCESS_VERIFY_EMAIL' });
 
@@ -91,28 +87,6 @@ router.post('/register', async (req, res) => {
         console.error("[API Router /register] Error:", error);
         const errorCode = error.code || 'API_SERVER_ERROR_GENERIC';
         return res.status(500).json({ errorCode });
-    }
-});
-
-
-
-
-router.get('/quota-status', authenticateToken, async (req, res) => {
-    const userId = req.user.userId;
-    try {
-        const sql = "SELECT used_quota, upload_quota FROM user WHERE id = ?";
-        const [results] = await dbPool.execute(sql, [userId]);
-        if (results.length === 0) {
-            return res.status(404).json({ errorCode: 'API_USER_NOT_FOUND' }); // Need this code
-        }
-        const quota = {
-            used: parseInt(results[0].used_quota, 10) || 0,
-            allowed: parseInt(results[0].upload_quota, 10) || 0
-        };
-        res.status(200).json(quota);
-    } catch (error) {
-        console.error(`Error fetching quota for user ${userId}:`, error);
-        res.status(500).json({ errorCode: 'API_SERVER_ERROR_GENERIC' });
     }
 });
 
