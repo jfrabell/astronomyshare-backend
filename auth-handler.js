@@ -5,7 +5,7 @@ const { userPool } = require('./cognito-config');
 console.log("Cognito UserPoolId:", process.env.REACT_APP_COGNITO_USER_POOL_ID);
 console.log("Cognito ClientId:", process.env.REACT_APP_COGNITO_CLIENT_ID);
 
-exports.register = async (event) => {
+exports.handler = async (event) => {
   try {
     const body = JSON.parse(event.body);
     const { uname, email, given_name, pwrd } = body;
