@@ -1,9 +1,5 @@
 // auth-handler.js
 const dbPool = require('./db');
-const { userPool } = require('./cognito-config');
-
-console.log("Cognito UserPoolId:", process.env.REACT_APP_COGNITO_USER_POOL_ID);
-console.log("Cognito ClientId:", process.env.REACT_APP_COGNITO_CLIENT_ID);
 
 // Define CORS headers. Best practice is to use an environment variable for the origin in production.
 const corsHeaders = {
@@ -47,13 +43,22 @@ if (typeof event.body === "string") {
       return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ errorCode: 'API_AUTH_INVALID_EMAIL_FORMAT' }) };
     }
 
-    // --- Check DB duplicate ---
-    const [existingUsers] = await dbPool.execute(
-      "SELECT id FROM user WHERE uname = ? OR email = ?",
-      [uname, email]
+    // --- Check DB for duplicate username ---
+    const [existingUserByUname] = await dbPool.execute(
+      "SELECT id FROM user WHERE uname = ?",
+      [uname]
     );
-    if (existingUsers.length > 0) {
-      return { statusCode: 409, headers: corsHeaders, body: JSON.stringify({ errorCode: 'API_AUTH_USER_ALREADY_EXISTS' }) };
+    if (existingUserByUname.length > 0) {
+      return { statusCode: 409, headers: corsHeaders, body: JSON.stringify({ errorCode: 'API_AUTH_USERNAME_TAKEN' }) };
+    }
+
+    // --- Check DB for duplicate email ---
+    const [existingUserByEmail] = await dbPool.execute(
+      "SELECT id FROM user WHERE email = ?",
+      [email]
+    );
+    if (existingUserByEmail.length > 0) {
+      return { statusCode: 409, headers: corsHeaders, body: JSON.stringify({ errorCode: 'API_AUTH_EMAIL_TAKEN' }) };
     }
 
     // --- Insert DB ---
