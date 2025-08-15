@@ -5,7 +5,23 @@ const { userPool } = require('./cognito-config');
 console.log("Cognito UserPoolId:", process.env.REACT_APP_COGNITO_USER_POOL_ID);
 console.log("Cognito ClientId:", process.env.REACT_APP_COGNITO_CLIENT_ID);
 
+// Define CORS headers. Best practice is to use an environment variable for the origin in production.
+const corsHeaders = {
+    'Access-Control-Allow-Origin': process.env.FRONTEND_URL || 'http://localhost:3000',
+    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+    'Access-Control-Allow-Methods': 'OPTIONS,POST'
+};
+
 exports.handler = async (event) => {
+  // Handle CORS preflight requests sent by the browser
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
+      headers: corsHeaders,
+      body: ''
+    };
+  }
+
   try {
 
     console.log("Event received by Lambda:", JSON.stringify(event, null, 2));
@@ -18,35 +34,18 @@ if (typeof event.body === "string") {
   body = event.body;
 }
 
-    const { uname, email, given_name, pwrd, cognito_sub } = body;
+    // The password (pwrd) is handled by Cognito and is not needed here.
+    const { uname, email, given_name, cognito_sub } = body;
 
     // --- Validation ---
-    if (!uname || !email || !pwrd || !given_name) {
-      return { statusCode: 400, body: JSON.stringify({ errorCode: 'API_AUTH_MISSING_FIELDS' }) };
+    if (!uname || !email || !given_name || !cognito_sub) {
+      return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ errorCode: 'API_AUTH_MISSING_FIELDS' }) };
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return { statusCode: 400, body: JSON.stringify({ errorCode: 'API_AUTH_INVALID_EMAIL_FORMAT' }) };
+      return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ errorCode: 'API_AUTH_INVALID_EMAIL_FORMAT' }) };
     }
-
-    if (pwrd.length < 8) {
-      return { statusCode: 400, body: JSON.stringify({ errorCode: 'API_AUTH_PASSWORD_TOO_SHORT' }) };
-    }
-
-    // --- Cognito signup ---
-    //const cognitoResult = await new Promise((resolve, reject) => {
-    //  userPool.signUp(
-    //    uname,
-    //    pwrd,
-    //    [
-    //      { Name: 'email', Value: email },
-    //      { Name: 'given_name', Value: given_name }
-    //    ],
-    //    null,
-    //    (err, result) => (err ? reject(err) : resolve(result))
-    //  );
-    //});
 
     // --- Check DB duplicate ---
     const [existingUsers] = await dbPool.execute(
@@ -54,7 +53,7 @@ if (typeof event.body === "string") {
       [uname, email]
     );
     if (existingUsers.length > 0) {
-      return { statusCode: 409, body: JSON.stringify({ errorCode: 'API_AUTH_USER_ALREADY_EXISTS' }) };
+      return { statusCode: 409, headers: corsHeaders, body: JSON.stringify({ errorCode: 'API_AUTH_USER_ALREADY_EXISTS' }) };
     }
 
     // --- Insert DB ---
@@ -66,9 +65,9 @@ if (typeof event.body === "string") {
       [uname, email, given_name, cognito_sub, defaultQuota, usedQuota]
     );
 
-    return { statusCode: 201, body: JSON.stringify({ messageCode: 'API_AUTH_REGISTRATION_SUCCESS_VERIFY_EMAIL' }) };
+    return { statusCode: 201, headers: corsHeaders, body: JSON.stringify({ messageCode: 'API_AUTH_REGISTRATION_SUCCESS_VERIFY_EMAIL' }) };
   } catch (err) {
     console.error(err);
-    return { statusCode: 500, body: JSON.stringify({ errorCode: err.code || 'API_SERVER_ERROR_GENERIC' }) };
+    return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ errorCode: err.code || 'API_SERVER_ERROR_GENERIC' }) };
   }
 };
