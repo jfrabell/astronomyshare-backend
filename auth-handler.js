@@ -7,7 +7,17 @@ console.log("Cognito ClientId:", process.env.REACT_APP_COGNITO_CLIENT_ID);
 
 exports.handler = async (event) => {
   try {
-    const body = JSON.parse(event.body);
+
+    console.log("Event received by Lambda:", JSON.stringify(event, null, 2));
+
+   
+    let body;
+if (typeof event.body === "string") {
+  body = JSON.parse(event.body);
+} else {
+  body = event.body;
+}
+
     const { uname, email, given_name, pwrd } = body;
 
     // --- Validation ---
