@@ -18,7 +18,7 @@ if (typeof event.body === "string") {
   body = event.body;
 }
 
-    const { uname, email, given_name, pwrd } = body;
+    const { uname, email, given_name, pwrd, cognito_sub } = body;
 
     // --- Validation ---
     if (!uname || !email || !pwrd || !given_name) {
@@ -63,7 +63,7 @@ if (typeof event.body === "string") {
     await dbPool.execute(
       `INSERT INTO user (uname, email, given_name, cognito_sub, upload_quota, used_quota)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [uname, email, given_name, cognitoResult.userSub, defaultQuota, usedQuota]
+      [uname, email, given_name, cognito_sub, defaultQuota, usedQuota]
     );
 
     return { statusCode: 201, body: JSON.stringify({ messageCode: 'API_AUTH_REGISTRATION_SUCCESS_VERIFY_EMAIL' }) };
