@@ -35,18 +35,18 @@ if (typeof event.body === "string") {
     }
 
     // --- Cognito signup ---
-    const cognitoResult = await new Promise((resolve, reject) => {
-      userPool.signUp(
-        uname,
-        pwrd,
-        [
-          { Name: 'email', Value: email },
-          { Name: 'given_name', Value: given_name }
-        ],
-        null,
-        (err, result) => (err ? reject(err) : resolve(result))
-      );
-    });
+    //const cognitoResult = await new Promise((resolve, reject) => {
+    //  userPool.signUp(
+    //    uname,
+    //    pwrd,
+    //    [
+    //      { Name: 'email', Value: email },
+    //      { Name: 'given_name', Value: given_name }
+    //    ],
+    //    null,
+    //    (err, result) => (err ? reject(err) : resolve(result))
+    //  );
+    //});
 
     // --- Check DB duplicate ---
     const [existingUsers] = await dbPool.execute(
