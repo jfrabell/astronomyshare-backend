@@ -14,16 +14,4 @@ const pool = mysql.createPool({
     queueLimit: 0           // No limit on waiting queue
 });
 
-// Optional: Test the pool on startup
-(async () => {
-    try {
-        const connection = await pool.getConnection(); // Get a connection
-        console.log('[DB] Successfully connected to database pool.');
-        connection.release(); // Release the connection back to the pool
-    } catch (err) {
-        console.error('[DB] FATAL: Could not connect to database pool on startup:', err);
-        process.exit(1); // Optional: exit if DB isn't available on start
-    }
-})();
-
 module.exports = pool; // Export the POOL object

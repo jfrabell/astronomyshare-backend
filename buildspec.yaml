@@ -1,0 +1,18 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - npm ci
+  build:
+    commands:
+      # Create a new, clean directory for our deployment package
+      - mkdir deployment_package
+      # Copy the essential files and folders into it
+      - cp -r node_modules/ deployment_package/
+      - cp auth-handler.js db.js cognito-config.js package.json package-lock.json knexfile.js deployment_package/
+      - cp -r services/ middleware/ migrations/ seeds/ deployment_package/
+artifacts:
+  # Tell the pipeline that the final artifact is the contents of this new directory
+  base-directory: 'deployment_package'
+  files:
+    - '**/*'
