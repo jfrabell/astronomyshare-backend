@@ -1,7 +1,8 @@
 // backend/register-rollback-handler.js
-const AWS = require('aws-sdk');
 
-const cognito = new AWS.CognitoIdentityServiceProvider();
+const { CognitoIdentityServiceProviderClient, AdminDeleteUserCommand } = require("@aws-sdk/client-cognito-identity-provider");
+
+const client = new CognitoIdentityServiceProviderClient({});
 
 // Define CORS headers. Best practice is to use an environment variable for the origin in production.
 const corsHeaders = {
@@ -29,13 +30,15 @@ exports.handler = async (event) => {
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ message: 'Username is required for rollback.' }) };
     }
 
-    const params = {
+    const command = new AdminDeleteUserCommand({
         UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID, // Ensure this env var is available to the Lambda
         Username: username
-    };
+
+    });
 
     try {
-        await cognito.adminDeleteUser(params).promise();
+        // Use the AWS SDK v3 client to send the command
+        await client.send(command);
         console.log(`Successfully rolled back and deleted Cognito user: ${username}`);
         return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ message: 'Cognito user successfully deleted.' }) };
     } catch (error) {

@@ -1,3 +1,5 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: frabellweb
 service: astronomyshare-api
 
 frameworkVersion: '4'
@@ -6,7 +8,6 @@ provider:
   httpApi:
     cors:
       allowedOrigins:
-        - 'http://localhost:3000'
         - 'https://dev.astronomyshare.com'
       allowedHeaders:
         - Content-Type
@@ -22,17 +23,29 @@ provider:
     DB_HOST: ${env:DB_HOST}
     DB_USER: ${env:DB_USER}
     DB_PASSWORD: ${env:DB_PASSWORD}
-    DB_NAME: ${env:DB_NAME}
-    REACT_APP_COGNITO_USER_POOL_ID: ${env:REACT_APP_COGNITO_USER_POOL_ID}
-    FRONTEND_URL: ${env:FRONTEND_URL}
+    DB_NAME: ${env:DB_NAME} # This and other DB vars are loaded by serverless-dotenv-plugin
+  vpc:
+    securityGroupIds:
+      - sg-0017cc069575c972a
+    subnetIds:
+      - subnet-02fa6bf06db6f00d2
+      - subnet-0cffc6c6e11a43a04
+      - subnet-00df38dbc1ae76cbf
 
 plugins:
- - serverless-dotenv-plugin 
- - serverless-offline
+  - serverless-dotenv-plugin 
+  - serverless-offline
 
 custom:
   serverless-offline:
     httpPort: 4000
+  # Stage-specific variables
+  stages:
+    dev:
+      userPoolName: astronomyshare-user-pool-dev
+    prod:
+      # IMPORTANT: Use the exact name of your existing manual pool
+      userPoolName: "astronomyshare-user-pool-prod"
 
 functions:
   registerUser:
@@ -41,13 +54,68 @@ functions:
       - httpApi:
           path: /register
           method: post
+    package:
+      include:
+        - src/register-handler/index.js
+        - src/shared/**
+    environment:
+      REACT_APP_COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+
+  registerRollback:
+    handler: src/register-rollback-handler/index.handler
+    events:
+      - httpApi:
+          path: /register-rollback
+          method: post
+    package:
+      include:
+        - src/register-rollback-handler/index.js
+        - src/shared/**
+    environment:
+      REACT_APP_COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+
+  customMessage:
+    handler: src/custom-message-handler/index.handler
+    package:
+      include:
+        - src/custom-message-handler/index.js
+        - src/custom-message-handler/templates/**
+    environment:
+      FRONTEND_URL: ${env:FRONTEND_URL}
+
+resources:
+  Resources:
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:custom.stages.${sls:stage}.userPoolName}
+        AliasAttributes:
+          - email # Allow email to be used as an alias for the username
+        AutoVerifiedAttributes:
+          - email
+        LambdaConfig:
+          CustomMessage: !GetAtt CustomMessageLambdaFunction.Arn
+    
+    CognitoUserPoolCustomMessagePermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !GetAtt CustomMessageLambdaFunction.Arn
+        Principal: cognito-idp.amazonaws.com
+        SourceArn: !GetAtt CognitoUserPool.Arn
+
+  Outputs:
+    UserPoolId:
+      Description: "The ID of the Cognito User Pool"
+      Value: !Ref CognitoUserPool
+      Export:
+        Name: ${self:service}-${sls:stage}-UserPoolId
+    HttpApiUrl:
+      Description: "URL of the HTTP API"
+      Export:
+        Name: ${self:service}-${sls:stage}-HttpApiUrl
 
 package:
   individually: true
   exclude:
     - './**'
-  include:
-    - 'src/register-handler/index.js'
-    - 'src/register-handler/package.json'
-    - 'src/register-handler/node_modules/**'
-    - 'src/shared/**'

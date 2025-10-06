@@ -1,5 +1,5 @@
 {
-  "name": "register-handler",
+  "name": "register-rollback-handler",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@aws-sdk/client-cognito-identity-provider": "^3.865.0",
     "mysql2": "^3.15.1"
   }
 }

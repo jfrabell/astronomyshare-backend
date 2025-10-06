@@ -1,6 +1,5 @@
 // db.js (Using Connection Pool with Promises)
 const mysql = require('mysql2/promise'); // Still use promise wrapper
-require('dotenv').config();
 
 console.log('[DB] Creating connection pool...');
 
