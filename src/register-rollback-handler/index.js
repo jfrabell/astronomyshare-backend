@@ -1,5 +1,6 @@
 // backend/register-rollback-handler.js
 
+const dbPool = require('../shared/db');
 const { CognitoIdentityServiceProviderClient, AdminDeleteUserCommand } = require("@aws-sdk/client-cognito-identity-provider");
 
 const client = new CognitoIdentityServiceProviderClient({});
@@ -38,6 +39,14 @@ exports.handler = async (event) => {
 
     try {
         // Use the AWS SDK v3 client to send the command
+        // Also, delete the user from the database to prevent orphaned records
+        const [deleteResult] = await dbPool.execute(
+            "DELETE FROM user WHERE cognito_sub = ?",
+            [username] // Assuming the 'username' passed for rollback is the cognito_sub
+        );
+
+        console.log(`Database cleanup result for ${username}:`, deleteResult);
+
         await client.send(command);
         console.log(`Successfully rolled back and deleted Cognito user: ${username}`);
         return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ message: 'Cognito user successfully deleted.' }) };

@@ -55,9 +55,15 @@ functions:
           path: /register
           method: post
     package:
-      include:
-        - src/register-handler/index.js
-        - src/shared/**
+      patterns:
+        - 'src/register-handler/**'
+        - 'src/shared/**'
+    iam:
+      role:
+        statements:
+          - Effect: "Allow"
+            Action: "cognito-idp:AdminCreateUser"
+            Resource: !GetAtt CognitoUserPool.Arn
     environment:
       REACT_APP_COGNITO_USER_POOL_ID: !Ref CognitoUserPool
 
@@ -68,10 +74,16 @@ functions:
           path: /register-rollback
           method: post
     package:
-      include:
-        - src/register-rollback-handler/index.js
-        - src/shared/**
-    environment:
+      patterns:
+        - 'src/register-rollback-handler/**'
+        - 'src/shared/**'    
+    iam:
+      role:
+        statements:
+          - Effect: "Allow"
+            Action: "cognito-idp:AdminDeleteUser"
+            Resource: !GetAtt CognitoUserPool.Arn
+    environment: 
       REACT_APP_COGNITO_USER_POOL_ID: !Ref CognitoUserPool
 
   customMessage:
@@ -117,5 +129,3 @@ resources:
 
 package:
   individually: true
-  exclude:
-    - './**'
